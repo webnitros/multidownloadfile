@@ -6,12 +6,12 @@
  * Time: 10:33
  */
 
-namespace App\Exceptions;
+namespace MultiDownloadFile\Exceptions;
 
 
 use Exception;
 
-class ExceptionClient extends Exception
+class ExceptionMultiDownloadFile extends Exception
 {
 
 }

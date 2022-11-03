@@ -31,11 +31,12 @@
  * }
  */
 
-namespace App\Helpers;
+namespace MultiDownloadFile;
 
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise;
+use MultiDownloadFile\Exceptions\ExceptionMultiDownloadFile;
 
 class Download
 {
@@ -123,20 +124,24 @@ class Download
             if ($exception) {
 
                 /* @var \GuzzleHttp\Psr7\Response $Response */
-                $Response = $result['value'];
-
-                $code = $Response->getStatusCode();
-                if ($result['state'] !== 'fulfilled') {
-                    throw new Exception('Не удалось скачать изображение: status ' . $code . $source);
+                if (array_key_exists('value', $result)) {
+                    $Response = @$result['value'];
+                    $code = $Response->getStatusCode();
+                    if ($result['state'] !== 'fulfilled') {
+                        throw new ExceptionMultiDownloadFile('Не удалось скачать изображение: status ' . $code . $source);
+                    }
+                    if ($code !== 200) {
+                        throw new ExceptionMultiDownloadFile('Error download ' . $source);
+                    }
                 }
 
-
-                if ($code !== 200) {
-                    throw new Exception('Error download ' . $source);
+                if (array_key_exists('reason', $result)) {
+                    $Response = $result['reason'];
+                    throw new ExceptionMultiDownloadFile('Error download ' . $Response->getMessage());
                 }
 
                 if (!file_exists($target)) {
-                    throw new Exception('Изображение не загружено ' . $target);
+                    throw new ExceptionMultiDownloadFile('Изображение не загружено ' . $target . ' state ' . $state);
                 }
             }
             $this->results[$target] = $state;
